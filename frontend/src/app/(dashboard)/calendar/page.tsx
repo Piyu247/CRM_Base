@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Clock, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -15,7 +17,7 @@ interface CalendarEvent {
   day: number;
 }
 
-const mockEvents: CalendarEvent[] = [
+const initialEvents: CalendarEvent[] = [
   { id: "1", title: "Team Standup", time: "9:00 AM", color: "bg-indigo-500", day: 5 },
   { id: "2", title: "Client Call — Acme Corp", time: "11:30 AM", color: "bg-emerald-500", day: 8 },
   { id: "3", title: "Sprint Review", time: "2:00 PM", color: "bg-purple-500", day: 12 },
@@ -30,6 +32,12 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(now.getMonth());
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  
+  const [events, setEvents] = useState<CalendarEvent[]>(initialEvents);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [newEventTime, setNewEventTime] = useState("");
+  const [newEventDay, setNewEventDay] = useState(now.getDate());
 
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -48,16 +56,40 @@ export default function CalendarPage() {
 
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const dayEvents = (day: number) => mockEvents.filter(e => e.day === day);
+  const dayEvents = (day: number) => events.filter(e => e.day === day);
+
+  const handleAddEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEventTitle.trim()) return;
+
+    const newEvent: CalendarEvent = {
+      id: Date.now().toString(),
+      title: newEventTitle,
+      time: newEventTime || "12:00 PM",
+      color: "bg-indigo-500",
+      day: newEventDay,
+    };
+
+    setEvents([...events, newEvent]);
+    setIsModalOpen(false);
+    setNewEventTitle("");
+    setNewEventTime("");
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Calendar</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Schedule and manage your events.</p>
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors">
+        <button 
+          onClick={() => {
+            setNewEventDay(selectedDay || today);
+            setIsModalOpen(true);
+          }}
+          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+        >
           <Plus className="h-4 w-4" /> New Event
         </button>
       </div>
@@ -66,7 +98,7 @@ export default function CalendarPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950"
+        className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950 overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
@@ -102,7 +134,7 @@ export default function CalendarPage() {
             <div key={`blank-${i}`} className="min-h-[100px] border-b border-r border-gray-100 bg-gray-50/50 dark:border-gray-800/50 dark:bg-gray-900/30" />
           ))}
           {days.map(day => {
-            const events = dayEvents(day);
+            const dayEvs = dayEvents(day);
             const isToday = isCurrentMonth && day === today;
             const isSelected = selectedDay === day;
             return (
@@ -121,13 +153,13 @@ export default function CalendarPage() {
                   {day}
                 </span>
                 <div className="mt-1 space-y-1">
-                  {events.slice(0, 2).map(ev => (
+                  {dayEvs.slice(0, 2).map(ev => (
                     <div key={ev.id} className={`${ev.color} rounded px-1.5 py-0.5 text-[10px] font-medium text-white truncate`}>
                       {ev.title}
                     </div>
                   ))}
-                  {events.length > 2 && (
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">+{events.length - 2} more</span>
+                  {dayEvs.length > 2 && (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">+{dayEvs.length - 2} more</span>
                   )}
                 </div>
               </div>
@@ -143,7 +175,7 @@ export default function CalendarPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950"
+            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950 overflow-hidden"
           >
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               Events on {MONTHS[currentMonth]} {selectedDay}
@@ -156,13 +188,70 @@ export default function CalendarPage() {
                     <p className="font-medium text-gray-900 dark:text-white">{ev.title}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ev.time}</span>
-                      <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />Conference Room A</span>
+                      <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />Conference Room</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-950 border border-gray-200 dark:border-gray-800"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create New Event</h2>
+                <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleAddEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Title</label>
+                  <Input 
+                    value={newEventTitle} 
+                    onChange={(e) => setNewEventTitle(e.target.value)} 
+                    placeholder="e.g. Sync with Design Team" 
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time</label>
+                    <Input 
+                      value={newEventTime} 
+                      onChange={(e) => setNewEventTime(e.target.value)} 
+                      placeholder="e.g. 10:00 AM" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Day of Month</label>
+                    <Input 
+                      type="number"
+                      min={1}
+                      max={daysInMonth}
+                      value={newEventDay} 
+                      onChange={(e) => setNewEventDay(parseInt(e.target.value))} 
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex justify-end gap-3">
+                  <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                  <Button type="submit">Add Event</Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

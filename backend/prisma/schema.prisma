@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -12,7 +12,7 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      Role     @default(EMPLOYEE)
+  role      String   @default("EMPLOYEE")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -22,51 +22,30 @@ model User {
   projects  Project[] @relation("ProjectMembers")
 }
 
-enum Role {
-  ADMIN
-  MANAGER
-  EMPLOYEE
-}
-
 model Lead {
   id        String   @id @default(uuid())
   name      String
   email     String?
   phone     String?
   company   String?
-  status    LeadStatus @default(NEW)
+  status    String   @default("NEW")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   assignedToId String?
   assignedTo   User? @relation(fields: [assignedToId], references: [id])
-}
-
-enum LeadStatus {
-  NEW
-  CONTACTED
-  QUALIFIED
-  LOST
 }
 
 model Deal {
   id        String   @id @default(uuid())
   title     String
   value     Float
-  stage     DealStage @default(PROSPECTING)
+  stage     String   @default("PROSPECTING")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   assignedToId String?
   assignedTo   User? @relation(fields: [assignedToId], references: [id])
-}
-
-enum DealStage {
-  PROSPECTING
-  PROPOSAL
-  NEGOTIATION
-  WON
-  LOST
 }
 
 model Project {
@@ -84,7 +63,7 @@ model Task {
   id          String   @id @default(uuid())
   title       String
   description String?
-  status      TaskStatus @default(TODO)
+  status      String   @default("TODO")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -93,10 +72,4 @@ model Task {
 
   assignedToId String?
   assignedTo   User? @relation(fields: [assignedToId], references: [id])
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  DONE
 }
