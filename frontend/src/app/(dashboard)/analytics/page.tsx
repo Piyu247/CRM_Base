@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} tickFormatter={(v) => `$${v / 1000}k`} />
                 <Tooltip
                   contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                  formatter={(value: any) => [`$${value.toLocaleString()}`, "Revenue"]}
                 />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -120,7 +120,7 @@ export default function AnalyticsPage() {
                 </Pie>
                 <Tooltip
                   contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
-                  formatter={(value: number) => [`${value}%`, "Share"]}
+                  formatter={(value: any) => [`${value}%`, "Share"]}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
               <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
               <Tooltip
                 contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
-                formatter={(value: number) => [`${value}%`, "Conversion"]}
+                formatter={(value: any) => [`${value}%`, "Conversion"]}
               />
               <Area type="monotone" dataKey="rate" stroke="#8b5cf6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRate)" />
             </AreaChart>
